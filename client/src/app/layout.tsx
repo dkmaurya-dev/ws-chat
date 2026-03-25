@@ -15,6 +15,17 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "WS Chat - Real-time Chat Application",
   description: "A production-ready real-time chat application built with Next.js and Socket.io",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "WS Chat",
+  },
+};
+
+import { Viewport } from "next";
+export const viewport: Viewport = {
+  themeColor: "#000000",
 };
 
 import { AuthProvider } from "@/context/AuthContext";
