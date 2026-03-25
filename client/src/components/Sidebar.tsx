@@ -2,16 +2,20 @@
 
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { RoomUser, JoinRoomResponse } from '@/types/chat';
+import type { RoomUser, JoinRoomResponse, GlobalUser } from '@/types/chat';
 
 interface SidebarProps {
     currentUser: string | null;
+    currentUserId: string | null;
     currentRoom: string | null;
     roomUsers: RoomUser[];
     isConnected: boolean;
     onLeave: () => void;
     typingUsers: Map<string, boolean>;
     onlineUsers: Set<string>;
+    allUsers: GlobalUser[];
+    unreadDMs: Record<string, number>;
+    clearUnreadDM: (id: string) => void;
     onClose: () => void;
     onSwitchRoom?: (room: string) => Promise<JoinRoomResponse>;
     onCall?: (user: RoomUser) => void;
@@ -54,28 +58,35 @@ function getRelativeTime(isoString: string): string {
 
 export default function Sidebar({
     currentUser,
+    currentUserId,
     currentRoom,
     roomUsers,
     isConnected,
     onLeave,
     typingUsers,
+    onlineUsers,
+    allUsers,
+    unreadDMs,
+    clearUnreadDM,
     onClose,
     onSwitchRoom,
     onCall,
 }: SidebarProps) {
     const [showRoomList, setShowRoomList] = useState(false);
+    const [showDMList, setShowDMList] = useState(true);
     const [switchingTo, setSwitchingTo] = useState<string | null>(null);
 
-    const handleSwitchRoom = useCallback(async (roomName: string) => {
+    const handleSwitchRoom = useCallback(async (roomName: string, dmUserId?: string) => {
         if (roomName === currentRoom || !onSwitchRoom || !currentUser) return;
         setSwitchingTo(roomName);
+        if (dmUserId) clearUnreadDM(dmUserId);
         try {
             await onSwitchRoom(roomName);
         } catch {
             // ignore
         }
         setSwitchingTo(null);
-    }, [currentRoom, onSwitchRoom, currentUser]);
+    }, [currentRoom, onSwitchRoom, currentUser, clearUnreadDM]);
 
     return (
         <div className="w-80 bg-[#0d1225]/98 backdrop-blur-2xl border-r border-white/[0.06] flex flex-col h-full shadow-2xl shadow-black/30 relative">
@@ -191,6 +202,99 @@ export default function Sidebar({
                                         )}
                                     </motion.button>
                                 ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Direct Messages Dropdown */}
+                <button
+                    onClick={() => setShowDMList(!showDMList)}
+                    className="w-full flex items-center justify-between gap-2 px-3 py-2.5 mt-2 bg-purple-500/[0.08] border border-purple-500/20 rounded-xl hover:bg-purple-500/[0.12] transition-all group"
+                >
+                    <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                        </svg>
+                        <span className="text-sm font-medium text-purple-300 truncate">Direct Messages</span>
+                    </div>
+                    <motion.svg
+                        animate={{ rotate: showDMList ? 180 : 0 }}
+                        className="w-3.5 h-3.5 text-purple-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </motion.svg>
+                </button>
+
+                <AnimatePresence>
+                    {showDMList && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                        >
+                            <div className="mt-2 space-y-0.5">
+                                {allUsers.filter(u => u._id !== currentUserId).length === 0 ? (
+                                    <div className="px-3 py-4 text-center border border-white/5 rounded-lg bg-white/[0.02]">
+                                        <p className="text-xs text-gray-400 font-medium">No one else is here!</p>
+                                        <p className="text-[10px] text-gray-600 mt-1.5 leading-tight">Register a second account in an incognito window to test DMs.</p>
+                                    </div>
+                                ) : allUsers.filter(u => u._id !== currentUserId).map((u) => {
+                                    const sortedIds = [currentUserId, u._id].sort();
+                                    const roomName = `dm_${sortedIds[0]}_${sortedIds[1]}`;
+                                    const isOnline = onlineUsers.has(u._id) || onlineUsers.has(u.username);
+                                    const isSubSwitching = switchingTo === roomName;
+                                    const unreadCount = unreadDMs[u._id] || 0;
+
+                                    return (
+                                        <motion.button
+                                            key={u._id}
+                                            whileHover={{ x: 2 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={() => handleSwitchRoom(roomName, u._id)}
+                                            disabled={roomName === currentRoom || switchingTo !== null}
+                                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs transition-all duration-200 ${roomName === currentRoom
+                                                ? 'bg-purple-500/10 text-purple-300 cursor-default'
+                                                : 'text-gray-400 hover:text-gray-200 hover:bg-white/[0.05] cursor-pointer'
+                                                } ${isSubSwitching ? 'opacity-60' : ''}`}
+                                        >
+                                            <div className="relative">
+                                                <div
+                                                    className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase"
+                                                    style={{ backgroundColor: getAvatarColor(u.username) }}
+                                                >
+                                                    {u.username.charAt(0)}
+                                                </div>
+                                                {isOnline && (
+                                                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border border-[#0d1225]" />
+                                                )}
+                                            </div>
+                                            <span className="font-medium truncate">{u.username}</span>
+
+                                            {unreadCount > 0 && roomName !== currentRoom && (
+                                                <span className="ml-auto text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold">
+                                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                                </span>
+                                            )}
+
+                                            {roomName === currentRoom && (
+                                                <span className="ml-auto text-[9px] bg-purple-500/20 text-purple-400 px-1.5 py-0.5 rounded-full font-semibold">active</span>
+                                            )}
+                                            {isSubSwitching && (
+                                                <svg className="ml-auto w-3.5 h-3.5 animate-spin text-purple-400" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                                </svg>
+                                            )}
+                                        </motion.button>
+                                    );
+                                })
+                                }
                             </div>
                         </motion.div>
                     )}

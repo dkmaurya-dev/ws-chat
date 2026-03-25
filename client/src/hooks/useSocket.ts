@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import type { ChatMessage, RoomUser, TypingUser, JoinRoomResponse } from '@/types/chat';
+import type { ChatMessage, RoomUser, TypingUser, JoinRoomResponse, DMNotification } from '@/types/chat';
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:4000';
 
@@ -12,6 +12,7 @@ export function useSocket(token: string | null) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [roomUsers, setRoomUsers] = useState<RoomUser[]>([]);
     const [typingUsers, setTypingUsers] = useState<Map<string, boolean>>(new Map());
+    const [unreadDMs, setUnreadDMs] = useState<Record<string, number>>({});
     const [currentRoom, setCurrentRoom] = useState<string | null>(null);
     const [currentUser, setCurrentUser] = useState<string | null>(null);
     const [avatarColor, setAvatarColor] = useState<string>('#4ECDC4');
@@ -72,6 +73,18 @@ export function useSocket(token: string | null) {
         socket.on('room_users', (users: RoomUser[]) => {
             setRoomUsers(users);
             setOnlineUsers(new Set(users.map((u) => u.username)));
+        });
+
+        socket.on('online_users', (userIds: string[]) => {
+            setOnlineUsers(new Set(userIds));
+        });
+
+        socket.on('dm_notification', (data: DMNotification) => {
+            playNotification();
+            setUnreadDMs(prev => ({
+                ...prev,
+                [data.fromUserId]: (prev[data.fromUserId] || 0) + 1
+            }));
         });
 
         socket.on('user_typing', ({ username, isTyping }: TypingUser) => {
@@ -151,6 +164,14 @@ export function useSocket(token: string | null) {
         });
     }, []);
 
+    const clearUnreadDM = useCallback((userId: string) => {
+        setUnreadDMs(prev => {
+            const next = { ...prev };
+            delete next[userId];
+            return next;
+        });
+    }, []);
+
     return {
         isConnected,
         messages,
@@ -160,10 +181,12 @@ export function useSocket(token: string | null) {
         currentUser,
         avatarColor,
         onlineUsers,
+        unreadDMs,
         socket: socketRef.current,
         joinRoom,
         sendMessage,
         emitTyping,
         leaveRoom,
+        clearUnreadDM,
     };
 }

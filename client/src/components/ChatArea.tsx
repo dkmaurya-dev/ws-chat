@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { ChatMessage } from '@/types/chat';
+import type { ChatMessage, GlobalUser } from '@/types/chat';
 
 interface ChatAreaProps {
     messages: ChatMessage[];
@@ -16,6 +16,8 @@ interface ChatAreaProps {
     searchQuery: string;
     onSearchChange: (q: string) => void;
     roomUsersCount: number;
+    allUsers: GlobalUser[];
+    currentUserId: string | null;
 }
 
 function formatTime(timestamp: string): string {
@@ -87,6 +89,8 @@ export default function ChatArea({
     searchQuery,
     onSearchChange,
     roomUsersCount,
+    allUsers,
+    currentUserId,
 }: ChatAreaProps) {
     const bottomRef = useRef<HTMLDivElement>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -140,6 +144,17 @@ export default function ChatArea({
 
     const isSearching = searchQuery.trim().length > 0;
 
+    const displayRoomName = useMemo(() => {
+        if (!currentRoom) return '';
+        if (currentRoom.startsWith('dm_')) {
+            const [, id1, id2] = currentRoom.split('_');
+            const targetId = id1 === currentUserId ? id2 : id1;
+            const targetUser = allUsers.find(u => u._id === targetId);
+            return targetUser ? targetUser.username : 'Direct Message';
+        }
+        return currentRoom;
+    }, [currentRoom, currentUserId, allUsers]);
+
     return (
         <div className="flex-1 flex flex-col h-full bg-[#0f1729] relative">
             {/* Header */}
@@ -164,13 +179,19 @@ export default function ChatArea({
                     <div className="min-w-0">
                         <h2 className="text-base font-semibold text-white truncate flex items-center gap-2">
                             <svg className="w-4 h-4 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                                {currentRoom?.startsWith('dm_') ? (
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                ) : (
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                                )}
                             </svg>
-                            <span className="text-cyan-400">{currentRoom}</span>
-                            <span className="text-[10px] font-normal text-gray-500 bg-white/[0.04] px-2 py-0.5 rounded-full border border-white/[0.04] flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
-                                {roomUsersCount}
-                            </span>
+                            <span className="text-cyan-400">{displayRoomName}</span>
+                            {!currentRoom?.startsWith('dm_') && (
+                                <span className="text-[10px] font-normal text-gray-500 bg-white/[0.04] px-2 py-0.5 rounded-full border border-white/[0.04] flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+                                    {roomUsersCount}
+                                </span>
+                            )}
                             <span className="text-[10px] font-normal text-gray-600 bg-white/[0.03] px-2 py-0.5 rounded-full">
                                 {messages.length} msg{messages.length !== 1 ? 's' : ''}
                             </span>

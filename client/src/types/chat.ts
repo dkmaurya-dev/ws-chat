@@ -24,6 +24,19 @@ export interface TypingUser {
     isTyping: boolean;
 }
 
+export interface GlobalUser {
+    _id: string;
+    username: string;
+    avatarColor: string;
+}
+
+export interface DMNotification {
+    room: string;
+    fromUserId: string;
+    fromUsername: string;
+    message: string;
+}
+
 export interface JoinRoomResponse {
     success?: boolean;
     error?: string;

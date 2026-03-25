@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useSocket } from '@/hooks/useSocket';
 import JoinScreen from '@/components/JoinScreen';
 import Sidebar from '@/components/Sidebar';
@@ -11,6 +11,9 @@ import VideoCall from '@/components/VideoCall';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import AuthScreen from '@/components/AuthScreen';
+import type { GlobalUser } from '@/types/chat';
+
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:4000';
 
 export default function Home() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -27,11 +30,23 @@ export default function Home() {
     emitTyping,
     leaveRoom,
     onlineUsers,
+    unreadDMs,
+    clearUnreadDM,
     socket,
   } = useSocket(user?.token || null);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [allUsers, setAllUsers] = useState<GlobalUser[]>([]);
+
+  useEffect(() => {
+    if (user?.token) {
+      fetch(`${SERVER_URL}/api/auth/users`)
+        .then(res => res.json())
+        .then(data => setAllUsers(data))
+        .catch(console.error);
+    }
+  }, [user?.token]);
 
   const filteredMessages = useMemo(() => {
     if (!searchQuery.trim()) return messages;
@@ -126,12 +141,16 @@ export default function Home() {
           >
             <Sidebar
               currentUser={currentUser}
+              currentUserId={user?._id || null}
               currentRoom={currentRoom}
               roomUsers={roomUsers}
               isConnected={isConnected}
               onLeave={leaveRoom}
               typingUsers={typingUsers}
               onlineUsers={onlineUsers}
+              allUsers={allUsers}
+              unreadDMs={unreadDMs}
+              clearUnreadDM={clearUnreadDM}
               onClose={() => setSidebarOpen(false)}
               onSwitchRoom={handleSwitchRoom}
               onCall={(user) => startCall(user.id, user.username)}
@@ -154,6 +173,8 @@ export default function Home() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           roomUsersCount={roomUsers.length}
+          allUsers={allUsers}
+          currentUserId={user?._id || null}
         />
         <MessageInput
           onSend={sendMessage}

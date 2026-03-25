@@ -10,6 +10,7 @@ import jwt from 'jsonwebtoken';
 // In-memory store for room users
 const rooms = new Map(); // roomName -> Map<socketId, { username, id, joinedAt }>
 const userSocketMap = new Map(); // socketId -> { username, userId, room }
+const connectedUsers = new Map(); // userId -> socketId
 
 /**
  * Get list of users in a room
@@ -92,6 +93,10 @@ export function registerSocketHandlers(io) {
     io.on('connection', (socket) => {
         console.log(`✅ User connected: ${socket.user.username} (${socket.id})`);
 
+        const userIdStr = socket.user._id.toString();
+        connectedUsers.set(userIdStr, socket.id);
+        io.emit('online_users', Array.from(connectedUsers.keys()));
+
         // --- JOIN ROOM ---
         socket.on('join_room', async ({ room }, callback) => {
             if (!room) {
@@ -99,8 +104,8 @@ export function registerSocketHandlers(io) {
             }
 
             const trimmedRoom = room.trim();
-            if (trimmedRoom.length < 1 || trimmedRoom.length > 50) {
-                return callback?.({ error: 'Room name must be 1-50 characters' });
+            if (trimmedRoom.length < 1 || trimmedRoom.length > 100) {
+                return callback?.({ error: 'Room name must be 1-100 characters' });
             }
 
             // Leave previous room if any
@@ -197,6 +202,25 @@ export function registerSocketHandlers(io) {
                 };
 
                 io.to(userData.room).emit('message', message);
+
+                if (userData.room.startsWith('dm_')) {
+                    const [, id1, id2] = userData.room.split('_');
+                    const targetUserId = (id1 === userData.userId.toString()) ? id2 : id1;
+                    const targetSocketId = connectedUsers.get(targetUserId);
+
+                    if (targetSocketId) {
+                        const roomSet = io.sockets.adapter.rooms.get(userData.room);
+                        if (!roomSet || !roomSet.has(targetSocketId)) {
+                            io.to(targetSocketId).emit('dm_notification', {
+                                room: userData.room,
+                                fromUserId: userData.userId,
+                                fromUsername: userData.username,
+                                message: content.trim()
+                            });
+                        }
+                    }
+                }
+
                 callback?.({ success: true, message });
             } catch (err) {
                 console.error('Error saving message:', err);
@@ -284,6 +308,14 @@ export function registerSocketHandlers(io) {
 
         // --- DISCONNECT ---
         socket.on('disconnect', (reason) => {
+            const userIdStr = socket.user._id.toString();
+
+            // Fix multi-tab mapping issue
+            if (connectedUsers.get(userIdStr) === socket.id) {
+                connectedUsers.delete(userIdStr);
+                io.emit('online_users', Array.from(connectedUsers.keys()));
+            }
+
             const userData = removeUserFromRoom(socket.id);
             if (userData) {
                 io.to(userData.room).emit('message', {
