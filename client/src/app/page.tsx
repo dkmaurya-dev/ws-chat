@@ -13,7 +13,7 @@ import { useAuth } from '@/context/AuthContext';
 import AuthScreen from '@/components/AuthScreen';
 import type { GlobalUser } from '@/types/chat';
 
-const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:4000';
+const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL
 
 export default function Home() {
   const { user, isLoading: isAuthLoading } = useAuth();
