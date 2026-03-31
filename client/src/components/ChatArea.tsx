@@ -158,43 +158,34 @@ export default function ChatArea({
     return (
         <div className="flex-1 flex flex-col h-full bg-[#0f1729] relative">
             {/* Header */}
-            <div className="px-4 sm:px-6 py-3.5 border-b border-white/[0.06] bg-[#0d1225]/90 backdrop-blur-xl flex items-center justify-between gap-3">
+            <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-white/[0.05] bg-[#060914]/80 backdrop-blur-2xl flex items-center justify-between gap-3 sticky top-0 z-20">
                 <div className="flex items-center gap-3 min-w-0">
+
                     {/* Hamburger menu */}
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={onToggleSidebar}
-                        className="w-9 h-9 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center text-gray-400 hover:text-white transition-all shrink-0"
+                        className="w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.08] flex items-center justify-center text-gray-400 hover:text-white transition-all shrink-0"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             {sidebarOpen ? (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                             ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16m-7 6h7" />
                             )}
                         </svg>
                     </motion.button>
 
                     <div className="min-w-0">
-                        <h2 className="text-base font-semibold text-white truncate flex items-center gap-2">
-                            <svg className="w-4 h-4 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                {currentRoom?.startsWith('dm_') ? (
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                ) : (
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                                )}
-                            </svg>
-                            <span className="text-cyan-400">{displayRoomName}</span>
+                        <h2 className="text-sm sm:text-base font-bold text-white truncate flex items-center gap-2 tracking-tight">
+                            <span className="text-gradient-cyan">{displayRoomName}</span>
                             {!currentRoom?.startsWith('dm_') && (
-                                <span className="text-[10px] font-normal text-gray-500 bg-white/[0.04] px-2 py-0.5 rounded-full border border-white/[0.04] flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+                                <span className="hidden sm:flex text-[10px] font-medium text-cyan-400/80 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/10 items-center gap-1">
+                                    <span className="w-1 h-1 rounded-full bg-emerald-400 inline-block animate-pulse" />
                                     {roomUsersCount}
                                 </span>
                             )}
-                            <span className="text-[10px] font-normal text-gray-600 bg-white/[0.03] px-2 py-0.5 rounded-full">
-                                {messages.length} msg{messages.length !== 1 ? 's' : ''}
-                            </span>
                         </h2>
                         <AnimatePresence mode="wait">
                             {activeTypers.length > 0 ? (
@@ -242,12 +233,12 @@ export default function ChatArea({
                             setShowSearch(!showSearch);
                             if (showSearch) onSearchChange('');
                         }}
-                        className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${showSearch
-                            ? 'bg-cyan-500/20 text-cyan-400'
-                            : 'bg-white/[0.05] text-gray-400 hover:text-white hover:bg-white/[0.1]'
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${showSearch
+                            ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                            : 'bg-white/[0.03] text-gray-400 border border-white/[0.08] hover:text-white hover:bg-white/[0.08]'
                             }`}
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </motion.button>
@@ -497,34 +488,33 @@ function MessageBubble({
         >
             {/* Username label — hidden if grouped */}
             {!grouped && (
-                <span className={`text-[11px] font-medium mb-1 px-1 ${isOwn ? 'text-gray-500' : 'text-gray-400'}`}>
+                <span className={`text-[10px] font-bold mb-1 px-2 uppercase tracking-widest ${isOwn ? 'text-cyan-500/60' : 'text-gray-500'}`}>
                     {msg.username}
                 </span>
             )}
 
             {/* Message bubble row */}
-            <div className={`flex items-end gap-2 max-w-[85%] sm:max-w-[70%] ${isOwn ? 'flex-row-reverse' : ''}`}>
-                {/* Avatar — hidden if grouped */}
+            <div className={`flex items-end gap-2.5 w-full ${isOwn ? 'flex-row-reverse' : ''}`}>
+                {/* Avatar — hidden if grouped or own */}
                 {!isOwn && !grouped && (
                     <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-lg"
+                        className="w-8 h-8 rounded-xl flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 shadow-lg animate-morph"
                         style={{
                             backgroundColor: msg.avatarColor || '#4ECDC4',
-                            boxShadow: `0 4px 12px ${msg.avatarColor || '#4ECDC4'}33`,
+                            boxShadow: `0 4px 12px ${msg.avatarColor || '#4ECDC4'}44`,
                         }}
                     >
                         {msg.username?.charAt(0).toUpperCase()}
                     </div>
                 )}
-                {/* Spacer when avatar is hidden for grouped messages */}
                 {!isOwn && grouped && <div className="w-8 flex-shrink-0" />}
 
-                <div className="relative group">
+                <div className={`relative max-w-[85%] sm:max-w-[70%] group`}>
                     <div
                         onClick={() => setShowTimestamp(!showTimestamp)}
-                        className={`px-4 py-2.5 text-sm leading-relaxed break-words shadow-md transition-all duration-300 cursor-default ${isOwn
-                            ? `bg-gradient-to-r from-cyan-500 to-teal-400 text-white shadow-cyan-500/10 hover:shadow-cyan-500/20 ${grouped ? 'rounded-2xl rounded-br-md' : 'rounded-2xl rounded-br-md'}`
-                            : `bg-[#1e2442] text-gray-200 border border-white/[0.04] hover:border-white/[0.08] ${grouped ? 'rounded-2xl rounded-bl-md' : 'rounded-2xl rounded-bl-md'}`
+                        className={`px-4 py-2.5 text-sm leading-relaxed break-words shadow-sm transition-all duration-300 cursor-default ${isOwn
+                            ? `bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-cyan-500/10 ${grouped ? 'rounded-2xl' : 'rounded-2xl rounded-tr-sm'}`
+                            : `bg-white/[0.03] border border-white/[0.06] text-gray-200 hover:bg-white/[0.05] ${grouped ? 'rounded-2xl' : 'rounded-2xl rounded-tl-sm'}`
                             }`}
                     >
                         {msg.content}

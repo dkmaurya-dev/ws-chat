@@ -89,9 +89,10 @@ export default function Sidebar({
     }, [currentRoom, onSwitchRoom, currentUser, clearUnreadDM]);
 
     return (
-        <div className="w-80 bg-[#0d1225]/98 backdrop-blur-2xl border-r border-white/[0.06] flex flex-col h-full shadow-2xl shadow-black/30 relative">
-            {/* Animated gradient edge glow */}
-            <div className="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-cyan-500/20 via-purple-500/20 to-emerald-500/20 animate-gradient-shift" style={{ backgroundSize: '100% 200%' }} />
+        <div className="w-full h-full lg:w-80 bg-[#060914]/95 backdrop-blur-2xl border-r border-white/[0.05] flex flex-col shadow-2xl relative overflow-hidden">
+            {/* Animated edge glow */}
+            <div className="absolute top-0 right-0 w-[2px] h-full bg-gradient-to-b from-cyan-500/20 via-purple-500/20 to-emerald-500/20 animate-gradient-shift" />
+
 
             {/* Logo header */}
             <div className="p-5 border-b border-white/[0.06]">
@@ -108,36 +109,36 @@ export default function Sidebar({
                             <p className="text-[10px] text-gray-500 leading-tight">real-time • minimal • secure</p>
                         </div>
                     </div>
-                    {/* Mobile close button */}
+                    {/* Close button - visible on all screens below large */}
                     <button
                         onClick={onClose}
-                        className="lg:hidden w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                        className="lg:hidden w-10 h-10 rounded-xl bg-white/[0.03] border border-white/[0.05] flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 hover:border-white/10 transition-all active:scale-95"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
             </div>
 
             {/* Current user card */}
-            <div className="px-4 py-3 border-b border-white/[0.06]">
-                <div className="flex items-center gap-3 px-3 py-2.5 bg-gradient-to-r from-white/[0.04] to-white/[0.02] rounded-xl border border-white/[0.04]">
+            <div className="px-4 py-4 border-b border-white/[0.05]">
+                <div className="glass-card p-3 rounded-2xl flex items-center gap-3">
                     <div className="relative">
                         <div
-                            className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-md"
+                            className="w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-bold text-white shadow-xl animate-morph"
                             style={{ backgroundColor: getAvatarColor(currentUser || '') }}
                         >
                             {currentUser?.charAt(0).toUpperCase()}
                         </div>
-                        <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-[1.5px] border-[#0d1225]" />
+                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-[#060914] shadow-sm" />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{currentUser}</p>
-                        <p className="text-[10px] text-emerald-400 flex items-center gap-1">
-                            <span className="w-1 h-1 rounded-full bg-emerald-400 inline-block" />
-                            Online
-                        </p>
+                        <p className="text-sm font-semibold text-white truncate truncate tracking-tight">{currentUser}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            <span className="text-[10px] text-emerald-400/90 font-medium tracking-wide uppercase">Online</span>
+                        </div>
                     </div>
                 </div>
             </div>

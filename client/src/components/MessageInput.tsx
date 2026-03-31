@@ -88,7 +88,9 @@ export default function MessageInput({ onSend, onTyping, disabled }: MessageInpu
     };
 
     return (
-        <div className="relative px-4 sm:px-6 py-4 border-t border-white/[0.06] bg-[#0d1225]/90 backdrop-blur-xl" ref={emojiRef}>
+        <div className="relative px-4 sm:px-6 py-4 border-t border-white/[0.05] bg-[#060914]/80 backdrop-blur-2xl sticky bottom-0 z-20" ref={emojiRef}>
+            {/* Active typing indicator - mobile optimized */}
+
             {/* Emoji picker */}
             <AnimatePresence>
                 {showEmojis && (
@@ -97,7 +99,7 @@ export default function MessageInput({ onSend, onTyping, disabled }: MessageInpu
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute bottom-full left-4 sm:left-6 mb-2 bg-[#151a30] border border-white/[0.08] rounded-2xl shadow-2xl shadow-black/40 w-80 overflow-hidden"
+                        className="absolute bottom-full left-0 sm:left-6 right-0 sm:right-auto mb-3 bg-[#0a0e1a]/95 backdrop-blur-2xl border border-white/[0.08] rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col mx-4 sm:mx-0 overflow-hidden z-30 sm:w-80"
                     >
                         {/* Category tabs */}
                         <div className="flex items-center gap-0.5 px-2 py-2 border-b border-white/[0.06] bg-white/[0.02]">
@@ -145,9 +147,9 @@ export default function MessageInput({ onSend, onTyping, disabled }: MessageInpu
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => setShowEmojis(!showEmojis)}
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 flex-shrink-0 ${showEmojis
-                        ? 'bg-cyan-500/20 text-cyan-400 glow-cyan'
-                        : 'bg-white/[0.04] text-gray-400 hover:bg-white/[0.08] hover:text-gray-300'
+                    className={`w-11 h-11 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-300 flex-shrink-0 ${showEmojis
+                        ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 glow-cyan'
+                        : 'bg-white/[0.03] text-gray-400 border border-white/[0.08] hover:bg-white/[0.08] hover:text-gray-200'
                         }`}
                 >
                     <span className="text-xl">{showEmojis ? '✕' : '😊'}</span>
@@ -164,7 +166,7 @@ export default function MessageInput({ onSend, onTyping, disabled }: MessageInpu
                         placeholder="Write a message..."
                         disabled={disabled}
                         maxLength={MAX_CHARS}
-                        className="w-full px-4 pr-16 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white text-sm placeholder-gray-600 focus:outline-none focus:border-cyan-500/40 focus:ring-2 focus:ring-cyan-500/15 transition-all duration-300 disabled:opacity-50"
+                        className="w-full px-5 pr-14 py-3 bg-white/[0.03] border border-white/[0.08] rounded-xl sm:rounded-2xl text-white text-sm placeholder-gray-600 focus:outline-none focus:border-cyan-500/30 focus:ring-4 focus:ring-cyan-500/5 transition-all duration-300 disabled:opacity-50"
                     />
                     {/* Char counter ring */}
                     {message.length > 0 && (
@@ -203,9 +205,9 @@ export default function MessageInput({ onSend, onTyping, disabled }: MessageInpu
                     whileTap={{ scale: 0.95 }}
                     onClick={handleSend}
                     disabled={disabled || !message.trim()}
-                    className="w-11 h-11 rounded-xl flex items-center justify-center text-white bg-gradient-to-br from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 shadow-lg shadow-cyan-500/25 transition-all duration-300 disabled:opacity-25 disabled:cursor-not-allowed disabled:shadow-none flex-shrink-0"
+                    className="w-11 h-11 rounded-xl sm:rounded-2xl flex items-center justify-center text-white bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/20 transition-all duration-300 disabled:opacity-20 disabled:grayscale disabled:scale-95 flex-shrink-0"
                 >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                     </svg>
                 </motion.button>

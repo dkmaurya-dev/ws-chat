@@ -106,7 +106,7 @@ export default function Home() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="flex h-screen bg-[#0a0e1a] overflow-hidden noise-overlay"
+      className="flex h-dynamic-screen bg-[#060914] overflow-hidden noise-overlay"
     >
       {/* Video Call Overlay */}
       <VideoCall
@@ -133,12 +133,13 @@ export default function Home() {
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
-            initial={{ x: -300, opacity: 0 }}
+            initial={{ x: "-100%", opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -300, opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-            className="fixed lg:relative z-30 h-full"
+            exit={{ x: "-100%", opacity: 0 }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="fixed inset-y-0 left-0 z-30 w-full sm:w-80 lg:relative lg:translate-x-0"
           >
+            <div className="h-full sidebar-shadow lg:shadow-none">
             <Sidebar
               currentUser={currentUser}
               currentUserId={user?._id || null}
@@ -155,6 +156,7 @@ export default function Home() {
               onSwitchRoom={handleSwitchRoom}
               onCall={(user) => startCall(user.id, user.username)}
             />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

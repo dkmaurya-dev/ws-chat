@@ -37,75 +37,93 @@ export default function AuthScreen() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#0a0e1a] relative overflow-hidden noise-overlay">
-            {/* Background elements (reused from JoinScreen for consistency) */}
+        <div className="min-h-dynamic-screen flex items-center justify-center bg-[#060914] relative overflow-hidden noise-overlay">
+            {/* Animated background orbs */}
             <div className="absolute inset-0">
-                <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-purple-600/5 rounded-full blur-[140px]" />
-                <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-cyan-500/5 rounded-full blur-[140px]" />
+                <motion.div
+                    animate={{ x: [0, 80, -40, 0], y: [0, -60, 40, 0], scale: [1, 1.1, 0.9, 1] }}
+                    transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+                    className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[140px] opacity-40 animate-pulse-glow"
+                />
+                <motion.div
+                    animate={{ x: [0, -60, 40, 0], y: [0, 80, -40, 0], scale: [1, 0.9, 1.1, 1] }}
+                    transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+                    className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[140px] opacity-40 animate-pulse-glow"
+                />
             </div>
+
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="relative z-10 w-full max-w-md mx-4"
             >
-                <div className="text-center mb-8">
-                    <div className="relative inline-flex items-center justify-center mb-4">
-                        <div className="absolute w-16 h-16 rounded-2xl bg-cyan-500/20 blur-xl animate-pulse" />
-                        <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-purple-600 flex items-center justify-center shadow-lg">
-                            <span className="text-xl font-black text-white">WS</span>
+                <div className="text-center mb-8 px-4">
+                    <motion.div 
+                        initial={{ scale: 0.8 }}
+                        animate={{ scale: 1 }}
+                        className="relative inline-flex items-center justify-center mb-6"
+                    >
+                        <div className="absolute w-20 h-20 rounded-2xl bg-cyan-500/20 blur-2xl animate-pulse" />
+                        <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 flex items-center justify-center shadow-2xl glow-cyan animate-morph">
+                            <span className="text-2xl font-black text-white tracking-tighter">WS</span>
                         </div>
-                    </div>
-                    <h1 className="text-3xl font-bold text-white mb-2">
+                    </motion.div>
+                    <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 tracking-tight">
                         {isLogin ? 'Welcome Back' : 'Create Account'}
                     </h1>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-gray-400 text-sm font-medium tracking-wide">
                         {isLogin ? 'Sign in to continue chatting' : 'Join the WS Chat community'}
                     </p>
                 </div>
 
-                <div className="backdrop-blur-xl bg-white/[0.04] border border-white/[0.08] rounded-3xl p-8 shadow-2xl">
-                    <form onSubmit={handleSubmit} className="space-y-4">
+
+                <div className="glass-morphism rounded-[2.5rem] p-8 sm:p-10 shadow-2xl border border-white/10 relative overflow-hidden group">
+                    {/* Top inner glow */}
+                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
+                    
+                    <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
                         <AnimatePresence mode="wait">
                             {!isLogin && (
                                 <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
+                                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                    className="space-y-1.5"
                                 >
-                                    <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Username</label>
+                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] px-1">Username</label>
                                     <input
                                         type="text"
                                         required
                                         value={formData.username}
                                         onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                                        className="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-cyan-500/40 transition-all text-sm"
-                                        placeholder="johndoe"
+                                        className="w-full px-5 py-3.5 bg-white/[0.03] border border-white/[0.08] rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/40 focus:ring-4 focus:ring-cyan-500/5 transition-all text-base sm:text-sm"
+                                        placeholder="Enter your username"
                                     />
                                 </motion.div>
                             )}
                         </AnimatePresence>
-
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Email</label>
+ 
+                        <div className="space-y-1.5">
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] px-1">Email Address</label>
                             <input
                                 type="email"
                                 required
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-cyan-500/40 transition-all text-sm"
+                                className="w-full px-5 py-3.5 bg-white/[0.03] border border-white/[0.08] rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/40 focus:ring-4 focus:ring-cyan-500/5 transition-all text-sm"
                                 placeholder="name@example.com"
                             />
                         </div>
-
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">Password</label>
+ 
+                        <div className="space-y-1.5">
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] px-1">Secure Password</label>
                             <input
                                 type="password"
                                 required
                                 value={formData.password}
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                className="w-full px-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-white focus:outline-none focus:border-cyan-500/40 transition-all text-sm"
+                                className="w-full px-5 py-3.5 bg-white/[0.03] border border-white/[0.08] rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/40 focus:ring-4 focus:ring-cyan-500/5 transition-all text-sm"
                                 placeholder="••••••••"
                             />
                         </div>
@@ -116,13 +134,18 @@ export default function AuthScreen() {
                             </p>
                         )}
 
-                        <button
+                        <motion.button
+                            whileHover={{ scale: 1.02, y: -2 }}
+                            whileTap={{ scale: 0.98 }}
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/20 transition-all disabled:opacity-50"
+                            className="w-full py-4 rounded-2xl font-bold text-white bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 hover:from-cyan-400 hover:via-blue-400 hover:to-purple-500 shadow-xl shadow-cyan-500/20 transition-all duration-300 disabled:opacity-40 text-sm tracking-widest uppercase relative overflow-hidden group"
                         >
-                            {isLoading ? 'Processing...' : isLogin ? 'Sign In' : 'Sign Up'}
-                        </button>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <span className="relative">
+                                {isLoading ? 'Processing...' : isLogin ? 'Sign In' : 'Sign Up'}
+                            </span>
+                        </motion.button>
                     </form>
 
                     <div className="mt-6 text-center">
