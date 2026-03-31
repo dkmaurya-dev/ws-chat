@@ -6,7 +6,7 @@ const withPWA = withPWAInit({
   cacheOnFrontEndNav: true,
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
-  disable: process.env.NODE_ENV === "development",
+  disable: process.env.NEXT_NODE_ENV === "development",
   workboxOptions: {
     disableDevLogs: true,
   },
@@ -18,4 +18,4 @@ const nextConfig: NextConfig = {
   /* config options here */
 };
 
-export default process.env.NODE_ENV === "development" ? nextConfig : withPWA(nextConfig);
+export default process.env.NEXT_NODE_ENV === "development" ? nextConfig : withPWA(nextConfig);
