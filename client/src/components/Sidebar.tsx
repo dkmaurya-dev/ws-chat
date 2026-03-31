@@ -109,6 +109,18 @@ export default function Sidebar({
                             <p className="text-[10px] text-gray-500 leading-tight uppercase tracking-widest font-semibold opacity-50">Enterprise 1.0</p>
                         </div>
                     </div>
+
+                    {/* Close Button for mobile */}
+                    <motion.button
+                        whileHover={{ scale: 1.1, rotate: 90 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={onClose}
+                        className="lg:hidden w-9 h-9 rounded-xl bg-white/[0.03] border border-white/[0.08] hover:bg-rose-500/20 hover:border-rose-500/30 flex items-center justify-center text-gray-500 hover:text-rose-400 transition-all"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </motion.button>
                 </div>
             </div>
 
