@@ -156,9 +156,9 @@ export default function ChatArea({
     }, [currentRoom, currentUserId, allUsers]);
 
     return (
-        <div className="flex-1 flex flex-col h-full bg-[#0f1729] relative">
+        <div className="flex-1 flex flex-col h-full bg-transparent relative">
             {/* Header */}
-            <div className="px-4 py-3 sm:px-6 sm:py-4 border-b border-white/[0.05] bg-[#060914]/80 backdrop-blur-2xl flex items-center justify-between gap-3 sticky top-0 z-20">
+            <div className="px-4 py-4 sm:px-8 border-b border-white/[0.08] glass-panel flex items-center justify-between gap-4 sticky top-0 z-30 shadow-xl">
                 <div className="flex items-center gap-3 min-w-0">
 
                     {/* Hamburger menu */}
@@ -268,7 +268,7 @@ export default function ChatArea({
                         transition={{ duration: 0.2 }}
                         className="overflow-hidden border-b border-white/[0.06]"
                     >
-                        <div className="px-4 sm:px-6 py-3 bg-[#0d1225]/60">
+                        <div className="px-4 sm:px-8 py-4 bg-white/[0.02] border-b border-white/[0.08]">
                             <div className="relative">
                                 <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -512,9 +512,9 @@ function MessageBubble({
                 <div className={`relative max-w-[85%] sm:max-w-[70%] group`}>
                     <div
                         onClick={() => setShowTimestamp(!showTimestamp)}
-                        className={`px-4 py-2.5 text-sm leading-relaxed break-words shadow-sm transition-all duration-300 cursor-default ${isOwn
-                            ? `bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-cyan-500/10 ${grouped ? 'rounded-2xl' : 'rounded-2xl rounded-tr-sm'}`
-                            : `bg-white/[0.03] border border-white/[0.06] text-gray-200 hover:bg-white/[0.05] ${grouped ? 'rounded-2xl' : 'rounded-2xl rounded-tl-sm'}`
+                        className={`px-5 py-3 text-sm leading-relaxed break-words transition-all duration-500 cursor-default ${isOwn
+                            ? `bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white shadow-lg shadow-cyan-500/20 glow-ring-cyan ${grouped ? 'rounded-[20px]' : 'rounded-[20px] rounded-tr-none'}`
+                            : `glass-item text-gray-100 hover:border-white/20 ${grouped ? 'rounded-[20px]' : 'rounded-[20px] rounded-tl-none'}`
                             }`}
                     >
                         {msg.content}
@@ -528,7 +528,7 @@ function MessageBubble({
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.85, y: 5 }}
                                 transition={{ duration: 0.12 }}
-                                className={`absolute -top-9 ${isOwn ? 'right-0' : 'left-0'} flex items-center gap-0.5 bg-[#1a1f35] border border-white/10 rounded-full px-1.5 py-1 shadow-xl z-10`}
+                                className={`absolute -top-11 ${isOwn ? 'right-0' : 'left-0'} flex items-center gap-1.5 glass-panel border-white/10 rounded-2xl px-2 py-1.5 shadow-2xl z-20`}
                             >
                                 {REACTION_EMOJIS.map((emoji) => {
                                     const reacted = msgReactions[emoji]?.length > 0;

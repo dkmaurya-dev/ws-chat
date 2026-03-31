@@ -88,9 +88,7 @@ export default function MessageInput({ onSend, onTyping, disabled }: MessageInpu
     };
 
     return (
-        <div className="relative px-4 sm:px-6 py-4 border-t border-white/[0.05] bg-[#060914]/80 backdrop-blur-2xl sticky bottom-0 z-20" ref={emojiRef}>
-            {/* Active typing indicator - mobile optimized */}
-
+        <div className="relative px-4 sm:px-8 py-6 border-t border-white/[0.08] glass-panel sticky bottom-0 z-30" ref={emojiRef}>
             {/* Emoji picker */}
             <AnimatePresence>
                 {showEmojis && (
@@ -98,18 +96,18 @@ export default function MessageInput({ onSend, onTyping, disabled }: MessageInpu
                         initial={{ opacity: 0, y: 10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute bottom-full left-0 sm:left-6 right-0 sm:right-auto mb-3 bg-[#0a0e1a]/95 backdrop-blur-2xl border border-white/[0.08] rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col mx-4 sm:mx-0 overflow-hidden z-30 sm:w-80"
+                        transition={{ duration: 0.2 }}
+                        className="absolute bottom-full left-0 sm:left-8 right-0 sm:right-auto mb-4 glass-panel rounded-3xl shadow-2xl flex flex-col mx-4 sm:mx-0 overflow-hidden z-40 sm:w-80 border-white/10"
                     >
                         {/* Category tabs */}
-                        <div className="flex items-center gap-0.5 px-2 py-2 border-b border-white/[0.06] bg-white/[0.02]">
+                        <div className="flex items-center gap-1 px-3 py-2.5 border-b border-white/10 bg-white/[0.03]">
                             {EMOJI_CATEGORIES.map((cat, i) => (
                                 <button
                                     key={cat.label}
                                     onClick={() => setActiveCategory(i)}
-                                    className={`flex-1 flex items-center justify-center py-1.5 rounded-lg text-sm transition-all duration-200 ${activeCategory === i
-                                            ? 'bg-cyan-500/15 scale-105'
-                                            : 'hover:bg-white/[0.06]'
+                                    className={`flex-1 flex items-center justify-center py-2 rounded-xl text-lg transition-all duration-300 ${activeCategory === i
+                                            ? 'bg-cyan-500/20 text-cyan-400 scale-105 shadow-inner shadow-cyan-500/10'
+                                            : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
                                         }`}
                                     title={cat.label}
                                 >
@@ -119,19 +117,19 @@ export default function MessageInput({ onSend, onTyping, disabled }: MessageInpu
                         </div>
 
                         {/* Category label */}
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wider font-medium px-3 pt-2 pb-1">
+                        <p className="text-[10px] text-gray-500 uppercase tracking-[0.2em] font-black px-4 pt-3 pb-1.5 opacity-50">
                             {EMOJI_CATEGORIES[activeCategory].label}
                         </p>
 
                         {/* Emoji grid */}
-                        <div className="grid grid-cols-8 gap-0.5 px-2 pb-3">
+                        <div className="grid grid-cols-8 gap-1 px-3 pb-4">
                             {EMOJI_CATEGORIES[activeCategory].emojis.map((emoji) => (
                                 <motion.button
                                     key={emoji}
-                                    whileHover={{ scale: 1.3 }}
+                                    whileHover={{ scale: 1.3, backgroundColor: 'rgba(255,255,255,0.08)' }}
                                     whileTap={{ scale: 0.9 }}
                                     onClick={() => addEmoji(emoji)}
-                                    className="w-9 h-9 flex items-center justify-center text-lg hover:bg-white/[0.08] rounded-lg transition-colors duration-150"
+                                    className="w-8 h-8 flex items-center justify-center text-xl rounded-lg transition-colors duration-150"
                                 >
                                     {emoji}
                                 </motion.button>

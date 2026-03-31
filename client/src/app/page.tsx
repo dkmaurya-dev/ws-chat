@@ -106,8 +106,14 @@ export default function Home() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className="flex h-dynamic-screen bg-[#060914] overflow-hidden noise-overlay"
+      className="flex h-dynamic-screen mesh-gradient overflow-hidden relative"
     >
+      {/* Background elements */}
+      <div className="mesh-glow pointer-events-none">
+        <div className="mesh-ball w-[600px] h-[600px] bg-cyan-500/10 top-[-10%] left-[-10%]" />
+        <div className="mesh-ball w-[500px] h-[500px] bg-purple-500/10 bottom-[-10%] right-[-10%]" />
+      </div>
+
       {/* Video Call Overlay */}
       <VideoCall
         callState={callState}

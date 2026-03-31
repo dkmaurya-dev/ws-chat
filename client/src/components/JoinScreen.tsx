@@ -83,103 +83,76 @@ export default function JoinScreen({ onJoin, isConnected, username }: JoinScreen
     };
 
     return (
-        <div className="min-h-dynamic-screen flex items-center justify-center bg-[#060914] relative overflow-hidden noise-overlay">
-            {/* Animated background orbs */}
-            <div className="absolute inset-0">
-                <motion.div
-                    animate={{ x: [0, 100, -50, 0], y: [0, -100, 50, 0], scale: [1, 1.2, 0.9, 1] }}
-                    transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                    className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[140px] opacity-50 animate-pulse-glow"
-                />
-                <motion.div
-                    animate={{ x: [0, -80, 60, 0], y: [0, 80, -60, 0], scale: [1, 0.9, 1.1, 1] }}
-                    transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-                    className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[140px] opacity-50 animate-pulse-glow"
-                />
-                <motion.div
-                    animate={{ x: [0, 50, -80, 0], y: [0, -50, 80, 0] }}
-                    transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/5 rounded-full blur-[120px]"
-                />
-
-
-                {/* Floating particles */}
-                {particles.map((p) => (
-                    <FloatingParticle key={p.id} {...p} />
-                ))}
+        <div className="min-h-dynamic-screen flex items-center justify-center mesh-gradient relative overflow-hidden">
+            {/* Background elements */}
+            <div className="mesh-glow pointer-events-none">
+                <div className="mesh-ball w-[800px] h-[800px] bg-cyan-500/10 -top-1/4 -left-1/4" />
+                <div className="mesh-ball w-[600px] h-[600px] bg-purple-500/10 -bottom-1/4 -right-1/4" />
+                <div className="mesh-ball w-[400px] h-[400px] bg-emerald-500/5 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             </div>
 
             <motion.div
-                initial={{ opacity: 0, y: 40, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="relative z-10 w-full max-w-md mx-4"
             >
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2, duration: 0.5 }}
-                    className="text-center mb-8 px-4"
-                >
+                <div className="text-center mb-10 px-4">
                     {/* Animated logo */}
-                    <div className="relative inline-flex items-center justify-center mb-6">
-                        <div className="absolute w-24 h-24 rounded-3xl bg-cyan-500/20 blur-2xl animate-pulse" />
+                    <div className="relative inline-flex items-center justify-center mb-8">
+                        <div className="absolute w-28 h-28 rounded-3xl bg-cyan-500/20 blur-3xl animate-pulse" />
                         <div className="relative w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 flex items-center justify-center shadow-2xl glow-cyan animate-morph">
                             <span className="text-3xl font-black text-white tracking-tighter">WS</span>
                         </div>
                     </div>
-                    <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 tracking-tight">
-                        Hi, <span className="text-gradient-cyan">{username}</span>
+                    <h1 className="text-4xl sm:text-5xl font-black text-white mb-3 tracking-tighter text-glow-cyan">
+                        SELECT <span className="text-white/40">ROOM</span>
                     </h1>
-                    <p className="text-gray-400 text-sm font-medium tracking-wide">Where do you want to chat today?</p>
-                </motion.div>
+                    <p className="text-gray-500 text-[10px] font-black tracking-[0.4em] uppercase opacity-70">
+                        Agent: <span className="text-cyan-400/80">{username}</span>
+                    </p>
+                </div>
 
 
-                {/* Glass card */}
-                <div className="glass-morphism rounded-[2.5rem] p-8 sm:p-10 shadow-2xl border border-white/10 relative overflow-hidden group">
-                    {/* Top inner glow */}
-                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
-
-                    <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="glass-panel rounded-[40px] p-8 sm:p-12 shadow-2xl border-white/10 relative overflow-hidden">
+                    <form onSubmit={handleSubmit} className="space-y-8">
 
                         {/* Room input */}
-                        <div className="space-y-2">
-                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] px-1">Room Name</label>
-                            <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400/60 font-bold text-lg">#</span>
+                        <div className="space-y-3">
+                            <label className="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Namespace</label>
+                            <div className="relative group">
+                                <span className="absolute left-6 top-1/2 -translate-y-1/2 text-cyan-400/40 font-black text-xl transition-colors group-focus-within:text-cyan-400">#</span>
                                 <input
                                     type="text"
                                     value={room}
                                     onChange={(e) => setRoom(e.target.value)}
-                                    placeholder="Enter room name..."
+                                    placeholder="Room Name"
                                     maxLength={50}
-                                    className="w-full pl-10 pr-14 py-4 bg-white/[0.03] border border-white/[0.08] rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500/40 focus:ring-4 focus:ring-cyan-500/5 transition-all duration-300 text-base sm:text-sm"
+                                    className="w-full pl-12 pr-16 py-5 glass-input rounded-3xl text-white placeholder-gray-700 outline-none text-base sm:text-sm font-bold transition-all"
                                 />
-                                <span className={`absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-mono transition-colors ${room.length > 40 ? 'text-rose-400' : 'text-gray-600'}`}>
+                                <span className={`absolute right-6 top-1/2 -translate-y-1/2 text-[10px] font-black tracking-widest transition-colors ${room.length > 40 ? 'text-rose-500' : 'text-gray-700'}`}>
                                     {room.length}/50
                                 </span>
                             </div>
                         </div>
 
                         {/* Popular room chips */}
-                        <div className="space-y-2.5">
-                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] px-1">Quick Join</p>
-                            <div className="flex flex-wrap gap-2">
+                        <div className="space-y-3">
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] px-1">Common Nodes</p>
+                            <div className="flex flex-wrap gap-2.5">
                                 {POPULAR_ROOMS.map((r) => (
-                                    <motion.button
+                                    <button
                                         key={r.name}
                                         type="button"
-                                        whileHover={{ scale: 1.05, y: -2 }}
-                                        whileTap={{ scale: 0.95 }}
                                         onClick={() => setRoom(r.name)}
-                                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 border ${room === r.name
-                                            ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30 shadow-lg shadow-cyan-500/10'
-                                            : 'bg-white/[0.02] text-gray-500 border-white/[0.05] hover:bg-white/[0.05] hover:text-gray-300'
+                                        className={`px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2.5 border ${room === r.name
+                                            ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30 glow-ring-cyan'
+                                            : 'bg-white/[0.02] text-gray-600 border-white/[0.05] hover:bg-white/[0.06] hover:text-gray-300'
                                             }`}
                                     >
-                                        <span className="text-sm">{r.emoji}</span>
+                                        <span className="text-lg grayscale-0 group-hover:grayscale-0">{r.emoji}</span>
                                         <span>{r.name}</span>
-                                    </motion.button>
+                                    </button>
                                 ))}
                             </div>
                         </div>
@@ -188,38 +161,32 @@ export default function JoinScreen({ onJoin, isConnected, username }: JoinScreen
                             <motion.p
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="text-rose-400 text-xs bg-rose-500/10 border border-rose-500/20 rounded-2xl px-5 py-3 flex items-center gap-2 font-medium"
+                                className="text-rose-400 text-[11px] font-black bg-rose-400/5 border border-rose-400/10 rounded-2xl px-6 py-4 flex items-center gap-3 uppercase tracking-tighter"
                             >
-                                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.072 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                                </svg>
-                                {error}
+                                FIX: {error}
                             </motion.p>
                         )}
 
                         <motion.button
-                            whileHover={{ scale: 1.02, y: -2 }}
+                            whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             type="submit"
                             disabled={isLoading || !isConnected}
-                            className="w-full py-4 rounded-2xl font-bold text-white bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 hover:from-cyan-400 hover:via-blue-400 hover:to-purple-500 shadow-xl shadow-cyan-500/20 transition-all duration-300 disabled:opacity-40 text-sm tracking-widest uppercase relative overflow-hidden group"
+                            className="w-full py-5 rounded-2xl font-black text-white bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-700 shadow-xl shadow-cyan-500/20 transition-all duration-300 disabled:opacity-40 text-xs tracking-[0.2em] uppercase relative overflow-hidden"
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <span className="relative flex items-center justify-center gap-2">
+                            <span className="relative flex items-center justify-center gap-3">
                                 {isLoading ? (
                                     <>
                                         <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                         </svg>
-                                        Joining...
+                                        BOOTING...
                                     </>
                                 ) : (
                                     <>
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                                        </svg>
-                                        Join Room
+                                        INITIALIZE UPLINK
                                     </>
                                 )}
                             </span>
@@ -227,22 +194,18 @@ export default function JoinScreen({ onJoin, isConnected, username }: JoinScreen
                     </form>
 
                     {/* Connection status */}
-                    <div className="flex items-center justify-center gap-2 mt-6 pt-5 border-t border-white/[0.04]">
+                    <div className="flex items-center justify-center gap-3 mt-10 pt-8 border-t border-white/[0.04]">
                         <span className="relative flex h-2 w-2">
                             {isConnected && (
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-50" />
                             )}
-                            <span className={`relative inline-flex rounded-full h-2 w-2 ${isConnected ? 'bg-emerald-400' : 'bg-red-400 animate-pulse'}`} />
+                            <span className={`relative inline-flex rounded-full h-2 w-2 ${isConnected ? 'bg-emerald-400' : 'bg-rose-500 animate-pulse'}`} />
                         </span>
-                        <span className="text-[11px] text-gray-500">
-                            {isConnected ? 'Connected to server' : 'Reconnecting...'}
+                        <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest">
+                            {isConnected ? 'NODE CONNECTED' : 'AWAITING UPLINK...'}
                         </span>
                     </div>
                 </div>
-
-                <p className="text-center text-gray-600/60 text-[10px] mt-6 tracking-wide">
-                    Usernames must be unique per room.
-                </p>
             </motion.div>
         </div>
     );
