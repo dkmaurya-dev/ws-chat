@@ -11,7 +11,7 @@ import VideoCall from '@/components/VideoCall';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 import AuthScreen from '@/components/AuthScreen';
-import type { GlobalUser } from '@/types/chat';
+import type { GlobalUser, ChatMessage } from '@/types/chat';
 
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL
 
@@ -38,6 +38,11 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [allUsers, setAllUsers] = useState<GlobalUser[]>([]);
+  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
+
+  const {
+    deleteMessage
+  } = useSocket(user?.token || null);
 
   useEffect(() => {
     if (user?.token) {
@@ -183,11 +188,18 @@ export default function Home() {
           roomUsersCount={roomUsers.length}
           allUsers={allUsers}
           currentUserId={user?._id || null}
+          onReply={setReplyTo}
+          onDelete={deleteMessage}
         />
         <MessageInput
-          onSend={sendMessage}
+          onSend={(content) => {
+            sendMessage(content, replyTo?.id);
+            setReplyTo(null);
+          }}
           onTyping={emitTyping}
           disabled={!isConnected}
+          replyTo={replyTo}
+          onCancelReply={() => setReplyTo(null)}
         />
       </div>
     </motion.div>

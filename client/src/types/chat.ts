@@ -6,6 +6,12 @@ export interface ChatMessage {
     timestamp: string;
     avatarColor?: string;
     reactions?: Record<string, string[]>; // emoji -> list of usernames
+    isDeleted?: boolean;
+    replyTo?: {
+        id: string;
+        username: string;
+        content: string;
+    };
 }
 
 export interface MessageReaction {

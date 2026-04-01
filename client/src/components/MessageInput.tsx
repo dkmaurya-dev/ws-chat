@@ -7,6 +7,8 @@ interface MessageInputProps {
     onSend: (message: string) => void;
     onTyping: () => void;
     disabled?: boolean;
+    replyTo?: import('@/types/chat').ChatMessage | null;
+    onCancelReply?: () => void;
 }
 
 const EMOJI_CATEGORIES: { label: string; icon: string; emojis: string[] }[] = [
@@ -34,7 +36,13 @@ const EMOJI_CATEGORIES: { label: string; icon: string; emojis: string[] }[] = [
 
 const MAX_CHARS = 2000;
 
-export default function MessageInput({ onSend, onTyping, disabled }: MessageInputProps) {
+export default function MessageInput({ 
+    onSend, 
+    onTyping, 
+    disabled, 
+    replyTo, 
+    onCancelReply 
+}: MessageInputProps) {
     const [message, setMessage] = useState('');
     const [showEmojis, setShowEmojis] = useState(false);
     const [activeCategory, setActiveCategory] = useState(0);
@@ -134,6 +142,38 @@ export default function MessageInput({ onSend, onTyping, disabled }: MessageInpu
                                     {emoji}
                                 </motion.button>
                             ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Reply Preview */}
+            <AnimatePresence>
+                {replyTo && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        className="mb-3 mx-0 overflow-hidden glass-panel border-cyan-500/30 rounded-2xl flex items-stretch shadow-xl"
+                    >
+                        <div className="w-1.5 bg-gradient-to-b from-cyan-500 to-blue-600" />
+                        <div className="flex-1 px-4 py-2.5 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">
+                                    Replying to {replyTo.username}
+                                </span>
+                                <button
+                                    onClick={onCancelReply}
+                                    className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                                >
+                                    <svg className="w-3.5 h-3.5 text-gray-500 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p className="text-xs text-gray-400 line-clamp-1 italic">
+                                {replyTo.content}
+                            </p>
                         </div>
                     </motion.div>
                 )}

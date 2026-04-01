@@ -18,6 +18,8 @@ interface ChatAreaProps {
     roomUsersCount: number;
     allUsers: GlobalUser[];
     currentUserId: string | null;
+    onReply: (msg: ChatMessage) => void;
+    onDelete: (id: string) => void;
 }
 
 function formatTime(timestamp: string): string {
@@ -91,14 +93,19 @@ export default function ChatArea({
     roomUsersCount,
     allUsers,
     currentUserId,
+    onReply,
+    onDelete,
 }: ChatAreaProps) {
     const bottomRef = useRef<HTMLDivElement>(null);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const [showScrollBtn, setShowScrollBtn] = useState(false);
     const [showSearch, setShowSearch] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const isAtBottom = useRef(true);
     const [reactions, setReactions] = useState<Record<string, Record<string, string[]>>>({});
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
     const toggleReaction = useCallback((msgId: string, emoji: string, username: string) => {
         setReactions((prev) => {
@@ -111,6 +118,15 @@ export default function ChatArea({
             if (newUsers.length === 0) delete newMsgReactions[emoji];
             return { ...prev, [msgId]: newMsgReactions };
         });
+    }, []);
+
+    const scrollToMessage = useCallback((msgId: string) => {
+        const el = messageRefs.current[msgId];
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('highlight-message');
+            setTimeout(() => el.classList.remove('highlight-message'), 2000);
+        }
     }, []);
 
     const scrollToBottom = useCallback(() => {
@@ -126,6 +142,13 @@ export default function ChatArea({
             setUnreadCount((prev) => prev + 1);
         }
     }, [messages]);
+
+    useEffect(() => {
+        if (toast) {
+            const timer = setTimeout(() => setToast(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [toast]);
 
     // Scroll handler
     const handleScroll = useCallback(() => {
@@ -370,6 +393,10 @@ export default function ChatArea({
                                         grouped={grouped}
                                         msgReactions={reactions[msg.id] || {}}
                                         onToggleReaction={(emoji) => toggleReaction(msg.id, emoji, currentUser || '')}
+                                        onReply={() => onReply(msg)}
+                                        onDelete={() => setConfirmDeleteId(msg.id)}
+                                        onQuoteClick={() => msg.replyTo && scrollToMessage(msg.replyTo.id)}
+                                        innerRef={(el) => (messageRefs.current[msg.id] = el)}
                                     />
                                 )}
                             </div>
@@ -436,6 +463,70 @@ export default function ChatArea({
                     </motion.button>
                 )}
             </AnimatePresence>
+
+            {/* Delete Confirmation Modal */}
+            <AnimatePresence>
+                {confirmDeleteId && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setConfirmDeleteId(null)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-sm glass-panel border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center"
+                        >
+                            <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mb-4 text-red-500">
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-bold text-white mb-2">Delete Message?</h3>
+                            <p className="text-sm text-gray-400 mb-6">
+                                This action cannot be undone. The message will be removed for everyone in the chat.
+                            </p>
+                            <div className="flex items-center gap-3 w-full">
+                                <button
+                                    onClick={() => setConfirmDeleteId(null)}
+                                    className="flex-1 px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-white text-sm font-semibold transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        onDelete(confirmDeleteId);
+                                        setConfirmDeleteId(null);
+                                        setToast({ message: 'Message deleted successfully', type: 'success' });
+                                    }}
+                                    className="flex-1 px-4 py-3 rounded-2xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-400 hover:to-rose-500 text-white text-sm font-semibold shadow-lg shadow-red-500/20 transition-all"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Success Toast */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.9 }}
+                        className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-2xl glass-panel border-cyan-500/20 shadow-2xl flex items-center gap-3"
+                    >
+                        <div className={`w-2 h-2 rounded-full ${toast.type === 'success' ? 'bg-emerald-400' : 'bg-red-400'} animate-pulse`} />
+                        <span className="text-sm font-medium text-white">{toast.message}</span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }
@@ -465,12 +556,20 @@ function MessageBubble({
     grouped,
     msgReactions,
     onToggleReaction,
+    onReply,
+    onDelete,
+    onQuoteClick,
+    innerRef,
 }: {
     msg: ChatMessage;
     isOwn: boolean;
     grouped: boolean;
     msgReactions: Record<string, string[]>;
     onToggleReaction: (emoji: string) => void;
+    onReply: () => void;
+    onDelete: () => void;
+    onQuoteClick: () => void;
+    innerRef: (el: HTMLDivElement | null) => void;
 }) {
     const [showActions, setShowActions] = useState(false);
     const [showTimestamp, setShowTimestamp] = useState(false);
@@ -485,6 +584,7 @@ function MessageBubble({
             className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} ${grouped ? 'mt-0.5' : 'mt-3'}`}
             onMouseEnter={() => setShowActions(true)}
             onMouseLeave={() => { setShowActions(false); setShowTimestamp(false); }}
+            ref={innerRef}
         >
             {/* Username label — hidden if grouped */}
             {!grouped && (
@@ -509,39 +609,86 @@ function MessageBubble({
                 )}
                 {!isOwn && grouped && <div className="w-8 flex-shrink-0" />}
 
-                <div className={`relative max-w-[85%] sm:max-w-[70%] group`}>
+                <div className={`relative max-w-[85%] sm:max-w-[70%] group flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
+                    {/* Reply Quote Display */}
+                    {msg.replyTo && !msg.isDeleted && (
+                        <motion.div
+                            onClick={onQuoteClick}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className={`mb-1 px-3 py-2 rounded-xl text-[11px] border cursor-pointer max-w-full truncate ${
+                                isOwn 
+                                ? 'bg-white/10 border-white/10 text-white/70' 
+                                : 'bg-black/10 border-white/5 text-gray-400'
+                            }`}
+                        >
+                            <span className="font-bold block mb-0.5 opacity-50 uppercase tracking-tighter">
+                                {msg.replyTo.username}
+                            </span>
+                            <span className="italic line-clamp-1">{msg.replyTo.content}</span>
+                        </motion.div>
+                    )}
+
                     <div
                         onClick={() => setShowTimestamp(!showTimestamp)}
-                        className={`px-5 py-3 text-sm leading-relaxed break-words transition-all duration-500 cursor-default ${isOwn
+                        className={`px-5 py-3 text-sm leading-relaxed break-words transition-all duration-300 cursor-default ${
+                            msg.isDeleted
+                            ? 'bg-transparent border border-white/10 text-gray-600 italic rounded-2xl'
+                            : isOwn
                             ? `bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white shadow-lg shadow-cyan-500/20 glow-ring-cyan ${grouped ? 'rounded-[20px]' : 'rounded-[20px] rounded-tr-none'}`
                             : `glass-item text-gray-100 hover:border-white/20 ${grouped ? 'rounded-[20px]' : 'rounded-[20px] rounded-tl-none'}`
-                            }`}
+                        }`}
                     >
                         {msg.content}
                     </div>
 
-                    {/* Quick reactions (on hover) */}
+                    {/* Actions Menu */}
                     <AnimatePresence>
-                        {showActions && (
+                        {showActions && !msg.isDeleted && (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.85, y: 5 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.85, y: 5 }}
                                 transition={{ duration: 0.12 }}
-                                className={`absolute -top-11 ${isOwn ? 'right-0' : 'left-0'} flex items-center gap-1.5 glass-panel border-white/10 rounded-2xl px-2 py-1.5 shadow-2xl z-20`}
+                                className={`absolute -top-11 ${isOwn ? 'right-0' : 'left-0'} flex items-center gap-1 glass-panel border-white/10 rounded-2xl px-1.5 py-1 z-30 shadow-2xl`}
                             >
-                                {REACTION_EMOJIS.map((emoji) => {
-                                    const reacted = msgReactions[emoji]?.length > 0;
-                                    return (
+                                <div className="flex items-center gap-0.5 border-r border-white/10 pr-1 mr-1">
+                                    {REACTION_EMOJIS.map((emoji) => {
+                                        const reacted = msgReactions[emoji]?.length > 0;
+                                        return (
+                                            <button
+                                                key={emoji}
+                                                onClick={() => onToggleReaction(emoji)}
+                                                className={`w-7 h-7 flex items-center justify-center text-xs hover:scale-125 transition-all rounded-full ${reacted ? 'bg-cyan-500/15 scale-110' : 'hover:bg-white/10'}`}
+                                            >
+                                                {emoji}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={onReply}
+                                        className="w-8 h-8 flex items-center justify-center rounded-xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
+                                        title="Reply"
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                        </svg>
+                                    </button>
+                                    {isOwn && (
                                         <button
-                                            key={emoji}
-                                            onClick={() => onToggleReaction(emoji)}
-                                            className={`w-7 h-7 flex items-center justify-center text-xs hover:scale-125 transition-all rounded-full ${reacted ? 'bg-cyan-500/15 scale-110' : 'hover:bg-white/10'}`}
+                                            onClick={onDelete}
+                                            className="w-8 h-8 flex items-center justify-center rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all"
+                                            title="Delete"
                                         >
-                                            {emoji}
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
                                         </button>
-                                    );
-                                })}
+                                    )}
+                                </div>
                             </motion.div>
                         )}
                     </AnimatePresence>

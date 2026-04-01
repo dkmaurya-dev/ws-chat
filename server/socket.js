@@ -123,20 +123,30 @@ export function registerSocketHandlers(io) {
             socket.join(trimmedRoom);
             addUserToRoom(trimmedRoom, socket.id, socket.user.username, socket.user._id);
 
-            // Fetch history from DB
+            // Fetch only non-deleted history from DB
             try {
-                const history = await Message.find({ room: trimmedRoom })
+                const history = await Message.find({ room: trimmedRoom, isDeleted: false })
                     .sort({ createdAt: -1 })
                     .limit(50)
-                    .populate('sender', 'username avatarColor');
+                    .populate('sender', 'username avatarColor')
+                    .populate({
+                        path: 'replyTo',
+                        populate: { path: 'sender', select: 'username' }
+                    });
 
                 const formattedHistory = history.reverse().map(msg => ({
-                    id: msg._id,
+                    id: msg._id.toString(),
                     type: msg.type,
                     username: msg.sender?.username || 'Unknown',
-                    content: msg.content,
+                    content: msg.isDeleted ? 'This message was deleted' : msg.content,
                     timestamp: msg.createdAt.toISOString(),
                     avatarColor: msg.sender?.avatarColor || '#4ECDC4',
+                    isDeleted: msg.isDeleted,
+                    replyTo: msg.replyTo ? {
+                        id: msg.replyTo._id.toString(),
+                        username: msg.replyTo.sender?.username || 'Unknown',
+                        content: msg.replyTo.isDeleted ? 'This message was deleted' : msg.replyTo.content,
+                    } : null,
                 }));
 
                 // Notify the room
@@ -174,7 +184,7 @@ export function registerSocketHandlers(io) {
         });
 
         // --- SEND MESSAGE ---
-        socket.on('send_message', async ({ content }, callback) => {
+        socket.on('send_message', async ({ content, replyToId }, callback) => {
             const userData = userSocketMap.get(socket.id);
             if (!userData) {
                 return callback?.({ error: 'You must join a room first' });
@@ -186,19 +196,38 @@ export function registerSocketHandlers(io) {
 
             // Save to MongoDB
             try {
-                const newMessage = await Message.create({
+                const newMessageData = {
                     room: userData.room,
                     sender: userData.userId,
                     content: content.trim(),
-                });
+                };
+
+                if (replyToId) {
+                    newMessageData.replyTo = replyToId;
+                }
+
+                const newMessage = await Message.create(newMessageData);
+                
+                let repliedMessage = null;
+                if (replyToId) {
+                    const originalMsg = await Message.findById(replyToId).populate('sender', 'username');
+                    if (originalMsg) {
+                        repliedMessage = {
+                            id: originalMsg._id,
+                            username: originalMsg.sender?.username || 'Unknown',
+                            content: originalMsg.isDeleted ? 'This message was deleted' : originalMsg.content
+                        };
+                    }
+                }
 
                 const message = {
-                    id: newMessage._id,
+                    id: newMessage._id.toString(),
                     type: 'user',
                     username: userData.username,
                     content: content.trim(),
                     timestamp: newMessage.createdAt.toISOString(),
                     avatarColor: socket.user.avatarColor,
+                    replyTo: repliedMessage,
                 };
 
                 io.to(userData.room).emit('message', message);
@@ -225,6 +254,34 @@ export function registerSocketHandlers(io) {
             } catch (err) {
                 console.error('Error saving message:', err);
                 callback?.({ error: 'Failed to save message' });
+            }
+        });
+
+        // --- DELETE MESSAGE ---
+        socket.on('delete_message', async ({ id }, callback) => {
+            try {
+                const msg = await Message.findById(id);
+                if (!msg) {
+                    return callback?.({ error: 'Message not found' });
+                }
+
+                // Security: Only sender can delete
+                if (msg.sender.toString() !== socket.user._id.toString()) {
+                    return callback?.({ error: 'Unauthorized to delete this message' });
+                }
+
+                msg.isDeleted = true;
+                await msg.save();
+
+                const userData = userSocketMap.get(socket.id);
+                if (userData) {
+                    io.to(userData.room).emit('message_deleted', { id });
+                }
+
+                callback?.({ success: true });
+            } catch (err) {
+                console.error('Error deleting message:', err);
+                callback?.({ error: 'Internal server error' });
             }
         });
 

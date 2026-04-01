@@ -20,6 +20,15 @@ const messageSchema = new mongoose.Schema({
         enum: ['user', 'system'],
         default: 'user',
     },
+    replyTo: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Message',
+        default: null
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: true });
 
 const Message = mongoose.model('Message', messageSchema);

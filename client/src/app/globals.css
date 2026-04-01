@@ -176,3 +176,14 @@
   min-height: 100vh;
   min-height: 100dvh;
 }
+
+/* ─── Highlights ─── */
+@keyframes highlight-fade {
+  0% { background-color: rgba(34, 211, 238, 0.4); }
+  100% { background-color: transparent; }
+}
+
+.highlight-message {
+  animation: highlight-fade 2s ease-out forwards;
+  border-radius: 20px;
+}

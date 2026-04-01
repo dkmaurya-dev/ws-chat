@@ -70,6 +70,10 @@ export function useSocket(token: string | null) {
             }
         });
 
+        socket.on('message_deleted', ({ id }: { id: string }) => {
+            setMessages((prev) => prev.filter(msg => msg.id !== id));
+        });
+
         socket.on('room_users', (users: RoomUser[]) => {
             setRoomUsers(users);
             setOnlineUsers(new Set(users.map((u) => u.username)));
@@ -126,15 +130,26 @@ export function useSocket(token: string | null) {
     }, []);
 
     // Send message
-    const sendMessage = useCallback((content: string) => {
+    const sendMessage = useCallback((content: string, replyToId?: string) => {
         if (!socketRef.current || !currentRoom) return;
 
-        socketRef.current.emit('send_message', { content }, (response: { success?: boolean; error?: string }) => {
+        socketRef.current.emit('send_message', { content, replyToId }, (response: { success?: boolean; error?: string }) => {
             if (response.error) {
                 console.error('Send error:', response.error);
             }
         });
     }, [currentRoom]);
+
+    // Delete message
+    const deleteMessage = useCallback((id: string) => {
+        if (!socketRef.current) return;
+
+        socketRef.current.emit('delete_message', { id }, (response: { success?: boolean; error?: string }) => {
+            if (response.error) {
+                console.error('Delete error:', response.error);
+            }
+        });
+    }, []);
 
     // Typing indicator
     const emitTyping = useCallback(() => {
@@ -185,6 +200,7 @@ export function useSocket(token: string | null) {
         socket: socketRef.current,
         joinRoom,
         sendMessage,
+        deleteMessage,
         emitTyping,
         leaveRoom,
         clearUnreadDM,
